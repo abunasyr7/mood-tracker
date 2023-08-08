@@ -1,29 +1,66 @@
-import React, {createContext, useCallback, useContext, useState} from 'react';
+import React from 'react';
 import {MoodOptionType, MoodOptionWithTimestamp} from './types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const storageKey = 'my-app-data';
+
+type AppData = {
+  moods: MoodOptionWithTimestamp[];
+};
+
+const getAppData = async (): Promise<AppData | null> => {
+  try {
+    const data = await AsyncStorage.getItem(storageKey);
+
+    if (data) {
+      return JSON.parse(data);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+const setAppData = async (newData: AppData) => {
+  try {
+    await AsyncStorage.setItem(storageKey, JSON.stringify(newData));
+  } catch {}
+};
 
 type AppContextType = {
   moodList: MoodOptionWithTimestamp[];
   handleSelectMood: (mood: MoodOptionType) => void;
 };
 
-const AppContext = createContext<AppContextType>({
+const defaultValue = {
   moodList: [],
   handleSelectMood: () => {},
-});
+};
 
-interface AppProvideProps {
-  children: React.ReactNode;
-}
+const AppContext = React.createContext<AppContextType>(defaultValue);
 
-export const AppProvider: React.FC<AppProvideProps> = ({children}) => {
-  const [moodList, setMoodList] = useState<MoodOptionWithTimestamp[]>([]);
+export const AppProvider: React.FC = ({children}) => {
+  const [moodList, setMoodList] = React.useState<MoodOptionWithTimestamp[]>([]);
 
-  const handleSelectMood = useCallback((selectedMood: MoodOptionType) => {
-    setMoodList(current => [
-      ...current,
-      {mood: selectedMood, timestamp: Date.now()},
-    ]);
+  const handleSelectMood = React.useCallback((mood: MoodOptionType) => {
+    setMoodList(current => {
+      const newValue = [...current, {mood, timestamp: Date.now()}];
+      setAppData({moods: newValue});
+      return newValue;
+    });
   }, []);
+
+  React.useEffect(() => {
+    const getDataFromStorage = async () => {
+      const data = await getAppData();
+
+      if (data) {
+        setMoodList(data.moods);
+      }
+    };
+    getDataFromStorage();
+  }, []);
+
   return (
     <AppContext.Provider value={{moodList, handleSelectMood}}>
       {children}
@@ -31,4 +68,4 @@ export const AppProvider: React.FC<AppProvideProps> = ({children}) => {
   );
 };
 
-export const useAppContext = () => useContext(AppContext);
+export const useAppContext = () => React.useContext(AppContext);
