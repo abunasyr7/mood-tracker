@@ -3,12 +3,28 @@ import React from 'react';
 import {Home} from './Home.screen';
 import {History} from './History.screen';
 import {Analytics} from './Analytics.screen';
+import {AnalyticsIcon, HistoryIcon, HomeIcon} from '../data/Icons';
+import {theme} from '../theme';
 
 const BottomTabs = createBottomTabNavigator();
 
 export const BottomTabsNavigator: React.FC = () => {
   return (
-    <BottomTabs.Navigator>
+    <BottomTabs.Navigator
+      screenOptions={({route}) => ({
+        headerTitleStyle: {
+          fontFamily: theme.fontFamilyRegular,
+        },
+        tabBarIcon: ({color, size}) => {
+          if (route.name === 'Home') {
+            return <HomeIcon color={color} size={size} />;
+          }
+          if (route.name === 'History') {
+            return <HistoryIcon color={color} size={size} />;
+          }
+          return <AnalyticsIcon size={size} color={color} />;
+        },
+      })}>
       <BottomTabs.Screen name={'Home'} component={Home} />
       <BottomTabs.Screen name={'History'} component={History} />
       <BottomTabs.Screen name={'Analytics'} component={Analytics} />

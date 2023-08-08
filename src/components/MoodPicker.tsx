@@ -1,5 +1,5 @@
-import React, {useCallback} from 'react';
-import {View, Text, StyleSheet, Pressable} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {View, Text, StyleSheet, Pressable, Image} from 'react-native';
 import {MoodOptionType} from '../types';
 import {theme} from '../theme';
 import {moodOptions} from '../data/mood';
@@ -10,11 +10,26 @@ type MoodPickerProps = {
 
 export const MoodPicker: React.FC<MoodPickerProps> = ({handleSelectMood}) => {
   const [selectedMood, setSelectedMood] = React.useState<MoodOptionType>();
+  const [hasSelected, setHasSelected] = useState(false);
+
+  const imageSrc = require('../../assets/butterflies.png');
 
   const handleSelect = useCallback(() => {
     selectedMood && handleSelectMood(selectedMood);
     setSelectedMood(undefined);
+    setHasSelected(true);
   }, [handleSelectMood, selectedMood]);
+
+  if (hasSelected) {
+    return (
+      <View style={styles.container}>
+        <Image source={imageSrc} style={styles.image} />
+        <Pressable style={styles.button} onPress={() => setHasSelected(false)}>
+          <Text style={styles.buttonText}>Choose another</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -60,7 +75,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 30,
-    marginBottom: 5,
   },
   selectedMoodItem: {
     borderWidth: 2,
@@ -72,20 +86,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 10,
     textAlign: 'center',
+    fontFamily: theme.fontFamilyBold,
   },
   container: {
+    height: 250,
     borderWidth: 2,
     borderColor: theme.colorPurple,
     margin: 10,
     borderRadius: 10,
     padding: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    justifyContent: 'space-between',
   },
   heading: {
     fontSize: 20,
     fontWeight: 'bold',
     letterSpacing: 1,
     textAlign: 'center',
-    marginBottom: 20,
+    color: theme.colorWhite,
+    fontFamily: theme.fontFamilyBold,
   },
   button: {
     backgroundColor: theme.colorPurple,
@@ -98,6 +117,9 @@ const styles = StyleSheet.create({
   buttonText: {
     color: theme.colorWhite,
     textAlign: 'center',
-    fontWeight: 'bold',
+    fontFamily: theme.fontFamilyBold,
+  },
+  image: {
+    alignSelf: 'center',
   },
 });
